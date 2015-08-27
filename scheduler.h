@@ -20,7 +20,7 @@ public:
 
     int submit(Coroutine* coroutine);
     int remove(Coroutine* coroutine);
-    int yield(int id);
+    void yield();
     int resume(int id);
 
     static void funcWrapper(uint32_t low32, uint32_t hi32);

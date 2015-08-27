@@ -22,8 +22,8 @@ void Scheduler::funcWrapper(uint32_t low32, uint32_t hi32){
     Coroutine* co = iter->second;
 
     co->execute();
+    co->setState(COROUTINE_DEAD);
 
-    co->destroyStack();
     s->cos_.erase(iter);
 
     delete co;
@@ -54,11 +54,6 @@ Scheduler::Scheduler(int sz)
 
 int Scheduler::submit(Coroutine* coroutine){
     cos_.insert(pair<int, Coroutine*>(cos_.size(), coroutine));
-
-    for(auto iter = cos_.begin(); iter != cos_.end(); iter++){
-      std::cout << iter->first << std::endl;
-    }
-
     return (cos_.size() - 1);
 }
 
@@ -98,16 +93,17 @@ int Scheduler::resume(int id){
     return 0;
 }
 
-int Scheduler::yield(int id) {
-    if((int)id != this->running_) return -1;
+void Scheduler::yield() {
+    int id = this->running_;
     Coroutine* co = cos_.find(id)->second;
 
     this->saveStack(co);
 
+
     co->setState(COROUTINE_SUSPEND);
     this->running_ = -1;
 
-    return 0;
+    swapcontext(&co->ctx, &this->main_);
 }
 
 void Scheduler::saveStack(Coroutine* co){
@@ -120,5 +116,5 @@ void Scheduler::saveStack(Coroutine* co){
         co->setCapcity(size);
     }
 
-    co->copyStackFromMainContext(top, size);
+    co->copyStackFromMainContext(&dummy, size);
 }

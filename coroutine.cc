@@ -27,20 +27,20 @@ Coroutine::Coroutine(coroutine_func func, void* ud, int cap, Scheduler* schedule
     }
 
     this->id_ = r;
-
-
+    this->stack_ = new char[this->cap_];
 }
+
+
+Coroutine::~Coroutine(){
+    delete[] this->stack_;
+}
+
 
 // positive for success.
 int Coroutine::resume(){
     return scheduler_->resume(this->id_);
 }
 
-
-// positive for success.
-int Coroutine::yield() {
-    return scheduler_->yield(this->id_);
-}
 
 void Coroutine::setCapcity(int cap){
     delete[] this->stack_;
@@ -50,7 +50,7 @@ void Coroutine::setCapcity(int cap){
 }
 
 void Coroutine::copyStackFromMainContext(const char* src, int sz){
-    memcpy(this->stack_, src, sz);
+    memcpy(this->stack_, (void*)src, sz);
     this->sz_ = sz;
 }
 
@@ -60,8 +60,4 @@ void Coroutine::copyStackToMainContext(char* dst){
 
 void Coroutine::execute(){
     this->func_(this->ud_);
-}
-
-void Coroutine::destroyStack(){
-    delete[] this->stack_;
 }

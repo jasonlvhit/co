@@ -20,14 +20,14 @@ class Coroutine {
 public:
     typedef void (*coroutine_func)(void* ud);
 
-    Coroutine(coroutine_func func, void* ud, int cap=(1024*1024), 
+    Coroutine(coroutine_func func, void* ud, int cap=(1024*1024),
             Scheduler* scheduler=NULL);
 
+    ~Coroutine();
+
     int resume();
-    int yield();
 
     void execute();
-    void destroyStack();
 
     COROUTINE_STATE getState() { return this->state_; }
     void setState(COROUTINE_STATE state){ this->state_ = state; }
@@ -35,7 +35,7 @@ public:
     int id() { return id_; }
     void setId(int id) { this->id_ = id; }
 
-    void setSize(int sz){ this->sz_ = sz; } 
+    void setSize(int sz){ this->sz_ = sz; }
     int size(){ return this->sz_; }
 
     int getCapcity(){ return cap_; }
@@ -47,19 +47,21 @@ public:
 
     ucontext_t ctx;
 
+    char* stack_;
+
 private:
     COROUTINE_STATE state_;
     coroutine_func func_;
     void* ud_;
 
     //ucontext_t ctx;
-    
+
     Scheduler* scheduler_;
     int cap_;
-    
+
     int sz_;
 
-    char* stack_;
+
 
     int id_;
 
